@@ -1,0 +1,24 @@
+version: 0.2    
+    
+phases:    
+  install:    
+    commands:    
+      - export AWS_ACCESS_KEY_ID=$image_scanning_access_key  
+      - export AWS_SECRET_ACCESS_KEY=$image_scanning_secret_access_key 
+      - export REGION=us-east-1  
+      - echo "Logging into Amazon ECR..."    
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $aws_account_id.dkr.ecr.us-east-1.amazonaws.com    
+  pre_build:    
+    commands:    
+      - echo "Setting up TMAS CLI..."    
+      - wget -q https://cli.artifactscan.cloudone.trendmicro.com/tmas-cli/latest/tmas-cli_Linux_x86_64.tar.gz    
+      - tar -xzf tmas-cli_Linux_x86_64.tar.gz   
+      - export PATH="$(pwd):$PATH"    
+  build:    
+    commands:  
+      - export TMAS_API_KEY=$tmas_api_key 
+      - echo "Scanning Docker images for malware..."    
+      - ./tmas scan registry:$aws_account_id.dkr.ecr.us-east-1.amazonaws.com/ecr-container-repo:latest --region=ap-southeast-1 -V 
+  post_build:    
+    commands:    
+      - echo "Build and scan completed."  

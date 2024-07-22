@@ -18,7 +18,8 @@ phases:
     commands:  
       - export TMAS_API_KEY=$tmas_api_key 
       - echo "Scanning Docker images for malware..."    
-      - ./tmas scan registry:$aws_account_id.dkr.ecr.us-east-1.amazonaws.com/ecr-container-repo:latest --region=ap-southeast-1 -V 
+      - ./tmas scan registry:$aws_account_id.dkr.ecr.us-east-1.amazonaws.com/ecr-container-repo:latest --region=ap-southeast-1 -V > vulnerabilitiesandmalware.json 2>/dev/null 
   post_build:    
     commands:    
-      - echo "Build and scan completed."  
+      - echo "Build and scan completed."
+      - 'totalVulnCount=$(jq ''.vulnerabilities.totalVulnCount'' vulnerabilitiesandmalware.json); echo "Total Vulnerability Count: $totalVulnCount"'  
